@@ -16,6 +16,7 @@ import (
 	"sync"
 	"unicode/utf8"
 
+	"github.com/axgle/mahonia"
 	"gopkg.in/alexcesaro/quotedprintable.v2/internal"
 )
 
@@ -246,6 +247,7 @@ func DecodeHeader(header string) (text, charset string, err error) {
 				header = header[len(word):]
 				break
 			}
+
 			if charset == "" {
 				charset = wordCharset
 			} else if charset != wordCharset {
@@ -364,6 +366,12 @@ func decodeWord(s string) (text []byte, charset string, err error) {
 		}
 	default:
 		return []byte(""), charset, fmt.Errorf("quotedprintable: RFC 2047 encoding not supported: %q", enc)
+	}
+
+	charset = strings.ToUpper(charset)
+	if charset == "GBK" || charset == "GB2312" || charset == "GB18030" {
+		d := mahonia.NewDecoder("gb18030")
+		return []byte(d.ConvertString(string(dec))), charset, nil
 	}
 
 	return dec, strings.ToUpper(charset), nil
